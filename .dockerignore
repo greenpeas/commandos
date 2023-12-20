@@ -1,0 +1,7 @@
+.vscode
+logs
+.gitignore
+.gitlab-ci.yml
+docker-compose.prod.yml
+Dockerfile
+README.md

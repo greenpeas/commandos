@@ -1,0 +1,47 @@
+stages:
+  - build
+  - run-on-prod
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+
+build-job:
+  stage: build
+  tags:
+    - builder
+  before_script:
+    - docker login -u seal_registry -p $CI_REGISTRY_TOKEN $CI_REGISTRY
+  script:
+    - >
+      DOCKER_BUILDKIT=1
+      docker build
+      --build-arg access_token=$READ_SEALS_PROJECTS
+      -t $IMAGE_TAG
+      --add-host gitlab.kvant.online:192.168.158.67
+      .
+    - docker push $IMAGE_TAG
+  after_script:
+    - docker logout ${CI_REGISTRY}
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "test"
+      exists:
+        - Dockerfile
+
+
+run-on-prod-job: # Запуск в проде
+  stage: run-on-prod
+  tags:
+    - seal-app-prod
+  before_script:
+    - docker login -u $READ_ALL_REGISTRY_USER -p $READ_ALL_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker-compose -f docker-compose.prod.yml pull
+    - docker-compose -f docker-compose.prod.yml up -d
+    - docker rmi $(docker images -f dangling=true -q) -f || true
+  after_script:
+    - docker logout ${CI_REGISTRY}
+  #when: manual
+  #allow_failure: false # блокируем конвейер
+  # Запускается только в том случае, если ветка master
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"

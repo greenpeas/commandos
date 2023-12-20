@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+
+  web:
+    image: creg.kvant.online/seal/commandos:latest
+    restart: always
+    ports:
+      - 8082:8082
+    volumes:
+      - /configs/seal-commandos/app.yml:/configs/app.yml
+      - logs:/logs
+
+networks:
+  default:
+    external: false
+    name: seal-network
+
+volumes:
+    logs:

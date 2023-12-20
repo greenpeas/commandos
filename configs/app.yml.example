@@ -1,0 +1,8 @@
+enableService: true
+grpc:
+  network: "tcp"
+  address: ":8082"
+# Database credentials
+database:
+  psql:
+    url: "postgres://wwwspo:qwerty@localhost:5432/wwwspo?application_name=Commandos (GoLang)"
